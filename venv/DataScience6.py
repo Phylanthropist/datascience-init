@@ -67,10 +67,21 @@ def dump_data(results):
 
 
 if __name__ == '__main__':
+    import sys
+
+    print(f"Running {sys.argv[0]}")
+
+    z_score_cutoff = int(sys.argv[1])
+    raw_count_cutoff = int(sys.argv[2])  # Had to convert to integer before passing it as an argument in line 80 and 81
+
     scripts, practices, chem = load_and_clean_data()
     chem = flag_opioids(chem)
     opioids_score = calculate_Z_score(scripts, chem)
-    anomalous_practices = flag_anomalous_practices(practices, opioids_score, scripts, z_score_cutoff=2,
-                                                   raw_count_cutoff=50)
+    anomalous_practices = flag_anomalous_practices(practices, opioids_score, scripts,
+                                                   z_score_cutoff=z_score_cutoff,
+                                                   raw_count_cutoff=raw_count_cutoff)
     dump_data(anomalous_practices)
 
+# It would be a best practice to make our program more dynamic by providing instances where the cutoff and
+# raw count value can be externally added when the program runs. If the values are not dynamically typed in
+# then anytime we make changes git will have to show a difference
