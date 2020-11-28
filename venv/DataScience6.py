@@ -61,10 +61,16 @@ def flag_anomalous_practices(practices, opioids_score, scripts, z_score_cutoff=2
     return result.query('z_score > @z_score_cutoff and counts > @raw_count_cutoff')
 
 
+def dump_data(results):
+    """Dump pandas data frame of the results to disk"""
+    results.to_csv('practices_flagged.csv', index=False)
+
+
 if __name__ == '__main__':
     scripts, practices, chem = load_and_clean_data()
     chem = flag_opioids(chem)
     opioids_score = calculate_Z_score(scripts, chem)
     anomalous_practices = flag_anomalous_practices(practices, opioids_score, scripts, z_score_cutoff=2,
                                                    raw_count_cutoff=50)
+    dump_data(anomalous_practices)
 
