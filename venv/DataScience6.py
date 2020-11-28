@@ -51,24 +51,20 @@ def calculate_Z_score(scripts, chem):
     return opioids_score
 
 
-def flag_anomalous_practices(practices, opioids_score, scripts, z_score_cutoff=2):
-    """Return practices that have a z-score greater than the cut-off"""
+def flag_anomalous_practices(practices, opioids_score, scripts, z_score_cutoff=2, raw_count_cutoff=50):
+    """Return practices that have a z-score and count greater than cutoff"""
     unique_practices = practices.sort_values('name').drop_duplicates(subset='code', keep='first')
     unique_practices = unique_practices.set_index('code')
     unique_practices['z_score'] = opioids_score
     unique_practices['counts'] = scripts['practice'].value_counts()
     result = unique_practices.sort_values('z_score', ascending=False).head(100)
-    return result.query('z_score > @z_score_cutoff')
-
-
-def dump_data(results):
-    """Dump pandas data frame of the results to disk"""
-    results.to_csv('practices_flagged.csv', index=False)
+    return result.query('z_score > @z_score_cutoff and counts > @raw_count_cutoff')
 
 
 if __name__ == '__main__':
     scripts, practices, chem = load_and_clean_data()
     chem = flag_opioids(chem)
     opioids_score = calculate_Z_score(scripts, chem)
-    anomalous_practices = flag_anomalous_practices(practices, opioids_score, scripts, z_score_cutoff=3)
-    dump_data(anomalous_practices)
+    anomalous_practices = flag_anomalous_practices(practices, opioids_score, scripts, z_score_cutoff=2,
+                                                   raw_count_cutoff=50)
+
