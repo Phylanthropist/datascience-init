@@ -67,21 +67,38 @@ def dump_data(results):
 
 
 if __name__ == '__main__':
-    import sys
+    import argparse
 
-    print(f"Running {sys.argv[0]}")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--z_score_cutoff',
+                        default=3,
+                        type=int,
+                        help='The z_score cutoff for flagging practices')
+    # The -- before the raw count and the z_score_cutoff is used to make it optional in a case an optional value is not
+    # passed
+    parser.add_argument('--raw_count_cutoff',
+                        default=50,
+                        type=int,
+                        help='The raw_count_cutoff for flagging practices')
+    # The args holds the value been passed to it
+    args = parser.parse_args()
+    # print(args)
+    # print(f"My raw count cutoff is {args.raw_count_cutoff}")
+    # print(f"My z-score cutoff is {args.z_score_cutoff}")
 
-    z_score_cutoff = int(sys.argv[1])
-    raw_count_cutoff = int(sys.argv[2])  # Had to convert to integer before passing it as an argument in line 80 and 81
+    # Had to convert to integer before passing it as an argument in line 80 and 81
 
     scripts, practices, chem = load_and_clean_data()
     chem = flag_opioids(chem)
     opioids_score = calculate_Z_score(scripts, chem)
     anomalous_practices = flag_anomalous_practices(practices, opioids_score, scripts,
-                                                   z_score_cutoff=z_score_cutoff,
-                                                   raw_count_cutoff=raw_count_cutoff)
+                                                   z_score_cutoff=args.z_score_cutoff,
+                                                   raw_count_cutoff=args.raw_count_cutoff)
+    # Here the args.z_score_cutoff and args.raw_count_cutoff in the code above is passed into the variable. If they are
+    # specified during entry at the command line then it takes the value else we use the default value.
     dump_data(anomalous_practices)
 
 # It would be a best practice to make our program more dynamic by providing instances where the cutoff and
 # raw count value can be externally added when the program runs. If the values are not dynamically typed in
 # then anytime we make changes git will have to show a difference
+# This code can be run on the command line
